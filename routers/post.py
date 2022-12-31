@@ -3,7 +3,7 @@ from fastapi.exceptions import HTTPException
 from routers.schemas import PostBase, PostDisplay
 from sqlalchemy.orm.session import Session
 from db.database import get_db
-from db.db_post import create_post_db, get_all
+from db.db_post import create_post_db, get_all_posts_db
 from typing import List
 
 router = APIRouter(prefix='/post',
@@ -23,4 +23,4 @@ def create_post(request: PostBase, db: Session = Depends(get_db)):
 
 @router.get('/all', response_model=List[PostDisplay])
 def all_posts(db: Session = Depends(get_db)):
-    return get_all(db)
+    return get_all_posts_db(db)

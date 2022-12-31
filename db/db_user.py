@@ -14,3 +14,7 @@ def create_user_db(db: Session, request: UserBase):
     db.commit()
     db.refresh(new_user)
     return new_user
+
+
+def get_all_users_db(db: Session):
+    return db.query(DbUser).all()

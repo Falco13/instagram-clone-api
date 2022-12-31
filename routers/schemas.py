@@ -9,6 +9,7 @@ class UserBase(BaseModel):
 
 
 class UserDisplay(BaseModel):
+    id: str
     username: str
     email: str
 

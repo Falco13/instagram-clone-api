@@ -1,10 +1,13 @@
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, status, UploadFile, File
 from fastapi.exceptions import HTTPException
 from routers.schemas import PostBase, PostDisplay
 from sqlalchemy.orm.session import Session
 from db.database import get_db
 from db.db_post import create_post_db, get_all_posts_db
 from typing import List
+import random
+import string
+import shutil
 
 router = APIRouter(prefix='/post',
                    tags=['post'],
@@ -24,3 +27,17 @@ def create_post(request: PostBase, db: Session = Depends(get_db)):
 @router.get('/all', response_model=List[PostDisplay])
 def all_posts(db: Session = Depends(get_db)):
     return get_all_posts_db(db)
+
+
+@router.post('/image')
+def upload_image(image: UploadFile = File(...)):
+    letters = string.ascii_letters
+    rand_str = ''.join(random.choice(letters) for i in range(11))
+    new = f'_{rand_str}.'
+    filename = new.join(image.filename.rsplit('.', 1))
+    path = f'images/{filename}'
+
+    with open(path, "w+b") as buffer:
+        shutil.copyfileobj(image.file, buffer)
+
+    return {'filename': path}

@@ -3,6 +3,7 @@ from fastapi.exceptions import HTTPException
 from routers.schemas import PostBase, PostDisplay, UserAuth
 from sqlalchemy.orm.session import Session
 from db.database import get_db
+from db.models import DbPost
 from db.db_post import create_post_db, get_all_posts_db
 from auth.oauth2 import get_current_user
 from typing import List
@@ -42,3 +43,17 @@ def upload_image(image: UploadFile = File(...), current_user: UserAuth = Depends
         shutil.copyfileobj(image.file, buffer)
 
     return {'filename': path}
+
+
+@router.delete('/delete/{id}')
+def delete(id: int, db: Session = Depends(get_db), current_user: UserAuth = Depends(get_current_user)):
+    post = db.query(DbPost).filter(DbPost.id == id).first()
+    if not post:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                            detail=f'Post with id: {id} not found')
+    if post.user_id != current_user.id:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
+                            detail='Only post creator can delete post')
+    db.delete(post)
+    db.commit()
+    return {'Post deleted': status.HTTP_204_NO_CONTENT}

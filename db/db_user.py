@@ -1,3 +1,4 @@
+from fastapi import HTTPException, status
 from routers.schemas import UserBase
 from db.models import DbUser
 from sqlalchemy.orm.session import Session
@@ -18,3 +19,11 @@ def create_user_db(db: Session, request: UserBase):
 
 def get_all_users_db(db: Session):
     return db.query(DbUser).all()
+
+
+def get_user_by_username(db: Session, username: str):
+    user = db.query(DbUser).filter(DbUser.username == username).first()
+    if not user:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                            detail=f'User with username {username} not found')
+    return user
